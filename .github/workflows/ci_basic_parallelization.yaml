@@ -2,6 +2,9 @@
 name: Tests are parallelized and partitioned by the number of files, but are not weighted by execution time
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
