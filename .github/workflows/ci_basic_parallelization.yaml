@@ -1,0 +1,32 @@
+---
+name: Tests are parallelized and partitioned by the number of files, but are not weighted by execution time
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  execute-unweighted-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        CI_NODE_INDEX: [0, 1, 2, 3]
+        CI_NODE_TOTAL: [4] # keep in sync with CI_NODE_INDEX.length
+
+    container:
+      image: node:latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Split and run tests
+      run: yarn --silent jest --listTests | sort | uniq | xargs ./.github/scripts/splitTests.js | xargs yarn jest
+      env:
+        CI_NODE_INDEX: ${{ matrix.CI_NODE_INDEX }}
+        CI_NODE_TOTAL: ${{ matrix.CI_NODE_TOTAL }}
